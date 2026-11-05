@@ -1,0 +1,43 @@
+version: 1
+project:
+  root: .
+  build_config: lzc-build.yml
+  package_file: package.yml
+  output: dist/application.lpk
+  target_arch: amd64
+update:
+  strategy: publish
+  allow_downgrade: false
+  version_source:
+    type: image
+    image: papra
+build:
+  toolchains: []
+  run_buildscript: false
+images:
+  - id: papra
+    target: service
+    service: papra
+    # Full registry path on purpose: papra publishes only to GHCR, a bare name
+    # would silently fall back to Docker Hub where it does not exist.
+    source: ghcr.io/papra-hq/papra
+    # Tags are 26.7.1-root / 26.7.1-rootless, never a bare x.y.z, so the stable
+    # channel cannot parse them. custom + version_regex strips the suffix.
+    channel: custom
+    sort: semver
+    tag_regex: '^[0-9]+[.][0-9]+[.][0-9]+-root$'
+    version_regex: '^(?P<version>[0-9]+[.][0-9]+[.][0-9]+)-root$'
+    version_template: '{version}'
+    delivery:
+      mode: mirror
+      require_digest_match: true
+release:
+  use_github_release_notes: true
+  store_changelog_format: plain
+stores:
+  official:
+    enabled: false
+  private:
+    enabled: false
+    name: Papra
+    skip_if_version_exists: true

@@ -1,0 +1,58 @@
+application:
+  subdomain: papra
+  multi_instance: false
+  # Papra ships its own account system with self-service sign-up, so it is
+  # exposed directly instead of sitting behind the platform login gate.
+  public_path:
+    - /
+  upstreams:
+    - location: /package-licenses/
+      backend: file:///lzcapp/pkg/content/licenses/
+    - location: /
+      backend: http://papra:1221/
+
+services:
+  papra:
+    # upstream: ghcr.io/papra-hq/papra:26.7.1-root
+    image: ghcr.1ms.run/papra-hq/papra:26.7.1-root
+    environment:
+      - PORT=1221
+      - APP_BASE_URL=https://{{ .S.AppDomain }}
+      # Pinned so that recreating the container does not invalidate every
+      # existing session and log the user out.
+      - |-
+        AUTH_SECRET={{ printf "%x" (stable_secret "auth_secret") }}
+      # No SMTP is available in the package, so verification mails cannot be
+      # sent - registration stays open without them, password reset is off.
+      - AUTH_IS_EMAIL_VERIFICATION_REQUIRED=false
+      - AUTH_IS_PASSWORD_RESET_ENABLED=false
+      - AUTH_IS_REGISTRATION_ENABLED=true
+      # The first account created becomes the admin.
+      - AUTH_FIRST_USER_AS_ADMIN=true
+      - TZ=Asia/Shanghai
+    binds:
+      - /lzcapp/var/app-data:/app/app-data
+
+usage: |
+  Papra 是一个简单的文档管理工具：把 PDF、扫描件、发票之类的文件传进去，
+  可以打标签、按内容做全文搜索，也能把文件分享给别人。
+
+  使用方法：
+  1. 打开应用，点注册，填邮箱和密码即可（不需要邮箱验证）。
+  2. **第一个注册的账号自动成为管理员**，请务必先自己注册。
+  3. 建一个组织（organization），然后就可以上传文档、建标签、搜索了。
+  4. 想继续添加成员，用同一个注册页再建账号即可。
+
+  数据与安全：
+  - 文档与数据库都保存在 /lzcapp/var/app-data，随应用持久化保留，
+    卸载应用会一并删除，重要文件请自行备份。
+  - 登录签名密钥（AUTH_SECRET）随包固定，容器重建不会把已登录用户踢下线。
+  - 应用直接对外开放，由 Papra 自己的注册/登录页鉴权：
+    自带账号体系的服务再套一层平台鉴权会造成重复登录，所以用 public_path。
+  - 本包没有配置邮件服务，因此关闭了「邮箱验证」与「忘记密码」两项；
+    忘记密码需要管理员在后台重置。
+
+  说明：
+  - 单容器运行，使用内置 SQLite 存储，不需要额外的数据库。
+  - 未做真机验证：注册、登录、上传文档、全文搜索以及重启后数据持久化
+    均未在设备上实测。

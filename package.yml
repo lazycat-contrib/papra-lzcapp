@@ -1,0 +1,18 @@
+package: community.lazycat.app.papra
+name: Papra
+version: 0.0.0
+description: "Simple document management: upload PDFs and scans, tag them, and search full text."
+min_os_version: "1.5.0"
+homepage: https://papra.app/
+author: papra-hq
+license: AGPL-3.0
+permissions:
+  required:
+    - net.internet
+locales:
+  zh:
+    name: Papra
+    description: "简单的文档管理工具：上传 PDF 与扫描件，打标签、按内容全文搜索。"
+  en:
+    name: Papra
+    description: "Simple document management: upload PDFs and scans, tag them, and search full text."
