@@ -18,9 +18,9 @@ images:
   - id: papra
     target: service
     service: papra
-    # Full registry path on purpose: papra publishes only to GHCR, a bare name
-    # would silently fall back to Docker Hub where it does not exist.
-    source: ghcr.io/papra-hq/papra
+    # Docker Hub community mirror published by the upstream maintainer; the GHCR
+    # image is only reachable through a GHCR mirror that rejects this tag.
+    source: corentinth/papra
     # Tags are 26.7.1-root / 26.7.1-rootless, never a bare x.y.z, so the stable
     # channel cannot parse them. custom + version_regex strips the suffix.
     channel: custom

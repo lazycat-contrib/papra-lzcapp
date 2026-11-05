@@ -13,8 +13,8 @@ application:
 
 services:
   papra:
-    # upstream: ghcr.io/papra-hq/papra:26.7.1-root
-    image: ghcr.1ms.run/papra-hq/papra:26.7.1-root
+    # upstream: corentinth/papra:26.7.1-root
+    image: docker.1ms.run/corentinth/papra:26.7.1-root
     environment:
       - PORT=1221
       - APP_BASE_URL=https://{{ .S.AppDomain }}
